@@ -39,6 +39,12 @@ export class Nomina {
   /** Aportes del trabajador, salario mínimo y auxilio de transporte: editables. */
   protected readonly parametros = signal<Parametros>({ ...PARAMETROS });
 
+  /** En celular y tablet el panel va arriba, plegado, con un resumen de lo que hay dentro. */
+  protected readonly paramAbierto = signal(false);
+  protected readonly resumen = computed(
+    () => `Recargo nocturno ${num(this.pcts()['recNocturno'])} % · Salud ${num(this.parametros().salud)} % · Pensión ${num(this.parametros().pension)} %`,
+  );
+
   protected readonly personas = signal<Persona[]>([]);
   protected readonly abiertas = signal<ReadonlySet<number>>(new Set());
   protected readonly saliendo = signal<number | null>(null);
@@ -98,7 +104,6 @@ export class Nomina {
 
   private readonly dialogo = viewChild.required<ElementRef<HTMLDialogElement>>('dlg');
   private readonly campoNombre = viewChild<ElementRef<HTMLInputElement>>('campoNombre');
-  private readonly rail = viewChild.required<ElementRef<HTMLElement>>('rail');
   private siguienteId = 1;
   private temporizador: ReturnType<typeof setTimeout> | undefined;
 
@@ -206,12 +211,6 @@ export class Nomina {
     });
     this.deshacer.set(null);
     clearTimeout(this.temporizador);
-  }
-
-  /** En celular y tablet el panel queda debajo de la lista: este acceso baja hasta él. */
-  protected irAPorcentajes() {
-    const reducido = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    this.rail().nativeElement.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth', block: 'start' });
   }
 
   /** Ratón o teclado resaltan de forma temporal; el toque táctil solo fija con clic. */
