@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "multiherramientas",
+  "compatibility_date": "2026-01-01",
+  "assets": {
+    "directory": "./dist/multiHerramientas/browser",
+    "not_found_handling": "single-page-application"
+  }
+}
