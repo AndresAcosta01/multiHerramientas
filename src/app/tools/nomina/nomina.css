@@ -1,0 +1,1012 @@
+:host {
+  display: block;
+  max-width: 1320px;
+}
+
+/* Cada concepto toma su color de los tokens globales. --c: tinte pálido; --d: tono profundo. */
+[data-t] {
+  --c: var(--raised);
+  --d: var(--muted);
+}
+[data-t='salario'] { --c: var(--salario-c); --d: var(--salario-d); }
+[data-t='recNocturno'] { --c: var(--recNocturno-c); --d: var(--recNocturno-d); }
+[data-t='domDiurno'] { --c: var(--domDiurno-c); --d: var(--domDiurno-d); }
+[data-t='domNocturno'] { --c: var(--domNocturno-c); --d: var(--domNocturno-d); }
+[data-t='extDiurna'] { --c: var(--extDiurna-c); --d: var(--extDiurna-d); }
+[data-t='extNocturna'] { --c: var(--extNocturna-c); --d: var(--extNocturna-d); }
+[data-t='extDomDiurna'] { --c: var(--extDomDiurna-c); --d: var(--extDomDiurna-d); }
+[data-t='extDomNocturna'] { --c: var(--extDomNocturna-c); --d: var(--extDomNocturna-d); }
+[data-t='incGeneral'] { --c: var(--incGeneral-c); --d: var(--incGeneral-d); }
+[data-t='incLaboral'] { --c: var(--incLaboral-c); --d: var(--incLaboral-d); }
+[data-t='licencia'] { --c: var(--licencia-c); --d: var(--licencia-d); }
+[data-t='comision'] { --c: var(--comision-c); --d: var(--comision-d); }
+[data-t='transporte'] { --c: var(--transporte-c); --d: var(--transporte-d); }
+[data-t='bono'] { --c: var(--bono-c); --d: var(--bono-d); }
+[data-t='salud'],
+[data-t='pension'],
+[data-t='fsp'] { --c: var(--deduccion-c); --d: var(--deduccion-d); }
+
+svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+h2 {
+  font-size: var(--fs-section);
+  font-weight: 600;
+  line-height: 24px;
+}
+
+h3 {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+/* ---------- Título ---------- */
+.titulo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+h1 {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  line-height: 38px;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  margin-top: 6px;
+  max-width: 68ch;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--muted);
+}
+
+/* ---------- Controles ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: var(--control-height);
+  padding: 0 14px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    transform 150ms var(--ease-out),
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn.primario {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover {
+    background: var(--raised);
+  }
+  .btn.primario:hover {
+    background: #2a3550;
+  }
+}
+
+.texto {
+  height: 28px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 500;
+  border-radius: 4px;
+  transition: transform 150ms var(--ease-out);
+}
+.texto:active {
+  transform: scale(0.97);
+}
+.texto.peligro {
+  color: var(--negative);
+}
+@media (hover: hover) and (pointer: fine) {
+  .texto:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.seg-ctrl {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-control);
+  background: var(--raised);
+}
+.seg-ctrl button {
+  height: 28px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+.seg-ctrl button:active {
+  transform: scale(0.96);
+}
+.seg-ctrl button[aria-pressed='true'] {
+  border-color: var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* ---------- Disposición ---------- */
+.grilla {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 372px;
+  align-items: start;
+  gap: var(--gap);
+}
+
+/* ---------- Barra de composición y leyenda ---------- */
+.seg {
+  flex-basis: 0;
+  min-width: 4px;
+  border-radius: 3px;
+  background: var(--d);
+  transition: opacity 150ms ease;
+}
+.apagado {
+  opacity: 0.28;
+}
+
+.leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-chip);
+  background: var(--c);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    opacity 150ms ease,
+    transform 150ms var(--ease-out),
+    box-shadow 150ms ease;
+}
+button.chip:active {
+  transform: scale(0.97);
+}
+button.chip[aria-pressed='true'] {
+  border-color: var(--d);
+}
+.chip.fijo {
+  height: 24px;
+  white-space: normal;
+}
+
+/* ---------- Lista ---------- */
+.lista {
+  display: flex;
+  flex-direction: column;
+}
+.barra-lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-bottom: 12px;
+}
+.barra-lista h2 {
+  margin-right: auto;
+}
+.buscar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--control-height);
+  padding: 0 10px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--muted);
+  transition: border-color 150ms ease;
+}
+.buscar:focus-within {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+.buscar input {
+  width: 200px;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  color: var(--text);
+}
+.cuenta {
+  margin-left: 4px;
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+  padding: 20px;
+  border: 1px dashed var(--control);
+  border-radius: var(--radius-card);
+  color: var(--muted);
+}
+
+/* Primera vez: cómo se calcula cada concepto, con los porcentajes vigentes */
+.como {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.como h3 {
+  margin: 0 0 8px;
+}
+.como dl {
+  margin: 0;
+}
+.como dl > div {
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 8px 0;
+  border-top: 1px solid var(--rule);
+}
+.como dt {
+  display: flex;
+}
+.como dd {
+  margin: 0;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--muted);
+}
+
+/* Persona: article es el contenedor que se pliega al salir; .tarjeta es la caja visible. */
+.persona {
+  display: grid;
+  grid-template-rows: 1fr;
+  margin-bottom: 8px;
+  transition:
+    grid-template-rows 200ms var(--ease-out),
+    margin-bottom 200ms var(--ease-out),
+    opacity 200ms var(--ease-out),
+    transform 280ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+.persona.saliendo {
+  grid-template-rows: 0fr;
+  margin-bottom: 0;
+  opacity: 0;
+  transform: scale(0.98);
+}
+.tarjeta {
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.cab {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 16px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px 12px;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  transition: background-color 150ms ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cab:hover {
+    background: var(--ground);
+  }
+}
+.quien {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.quien strong {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.quien small {
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.total small {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+}
+.total strong {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 26px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.chev {
+  color: var(--muted);
+  transition: transform 250ms var(--ease-out);
+}
+.abierta .chev {
+  transform: rotate(180deg);
+}
+
+.barra {
+  display: flex;
+  gap: 2px;
+  height: 6px;
+  margin: 0 16px 14px;
+}
+
+.det {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 260ms var(--ease-out),
+    visibility 0s linear 260ms;
+}
+.abierta .det {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition-delay: 0s;
+}
+.det-in {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---------- Tabla de conceptos ---------- */
+.tabla {
+  width: calc(100% - 32px);
+  margin: 0 16px;
+  border-top: 1px solid var(--rule);
+  table-layout: fixed;
+}
+.tabla th:first-child {
+  width: 272px;
+}
+.tabla th.num {
+  width: 132px;
+}
+.tabla th {
+  height: 36px;
+  font-size: 12px;
+  font-weight: 400;
+  text-align: left;
+  color: var(--muted);
+}
+.tabla th:nth-child(2) {
+  padding: 0 16px;
+}
+.tabla th.num,
+.tabla td.num {
+  text-align: right;
+}
+.tabla tbody tr {
+  border-top: 1px solid var(--rule);
+  transition: opacity 150ms ease;
+}
+.tabla td {
+  height: 45px;
+  padding: 0;
+}
+.tabla td.calc {
+  padding: 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.tabla td.num {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tabla .subtitulo th {
+  width: auto;
+  padding: 0;
+  font-weight: 600;
+}
+.tabla tbody tr.foco td {
+  background: color-mix(in srgb, var(--c) 50%, transparent);
+}
+.pie-persona {
+  display: flex;
+  padding: 0 16px 12px;
+}
+
+.abierta .tabla tbody tr {
+  animation: sube 240ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 35ms + 60ms);
+}
+@keyframes sube {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ---------- Rail de porcentajes: se ve completo, sin scroll propio ---------- */
+.rail {
+  min-width: 0;
+}
+.param-panel {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  background: var(--surface);
+}
+.ir-porcentajes {
+  display: none;
+}
+.desc {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--muted);
+}
+.param {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+  cursor: text;
+}
+.desc + .param {
+  border-top: 0;
+}
+.pt {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+}
+.campo {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: none;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--control);
+  border-radius: var(--radius-control);
+  background: var(--surface);
+  color: var(--muted);
+  transition: border-color 150ms ease;
+}
+.campo:focus-within {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+.param-panel .valores {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--rule);
+}
+.campo.ancho input {
+  width: 10ch;
+}
+.campo input {
+  width: 7ch;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  text-align: right;
+  color: var(--text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Aviso con deshacer ---------- */
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px 10px 16px;
+  border-radius: var(--radius-card);
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 8px 24px -6px rgb(21 27 43 / 0.35); /* taste-skill-ignore: el aviso flota */
+  transform: translateX(-50%);
+  transition:
+    opacity 220ms var(--ease-out),
+    transform 220ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+}
+.aviso button {
+  height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 4px;
+  background: rgb(255 255 255 / 0.14);
+  color: #fff;
+  font-weight: 500;
+  transition: transform 150ms var(--ease-out);
+}
+.aviso button:active {
+  transform: scale(0.96);
+}
+.aviso :focus-visible {
+  outline-color: #fff;
+}
+
+/* ---------- Modal ---------- */
+.modal {
+  width: min(720px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 24px 60px -12px rgb(21 27 43 / 0.3); /* taste-skill-ignore: el diálogo flota */
+  overflow: hidden;
+
+  opacity: 0;
+  transform: scale(0.97) translateY(6px);
+  transition:
+    opacity 150ms var(--ease-out),
+    transform 150ms var(--ease-out),
+    overlay 150ms allow-discrete,
+    display 150ms allow-discrete;
+}
+.modal[open] {
+  opacity: 1;
+  transform: none;
+  transition-duration: 220ms;
+
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+}
+.modal::backdrop {
+  background: rgb(21 27 43 / 0);
+  transition:
+    background-color 220ms ease,
+    overlay 220ms allow-discrete,
+    display 220ms allow-discrete;
+}
+.modal[open]::backdrop {
+  background: rgb(21 27 43 / 0.4);
+
+  @starting-style {
+    background: rgb(21 27 43 / 0);
+  }
+}
+.modal form {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 24px);
+}
+.modal-cab {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 6px;
+}
+.icono {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--muted);
+  transition:
+    background-color 150ms ease,
+    transform 150ms var(--ease-out);
+}
+.icono:active {
+  transform: scale(0.92);
+}
+@media (hover: hover) and (pointer: fine) {
+  .icono:hover {
+    background: var(--raised);
+  }
+}
+.modal-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 12px 24px 24px;
+  overflow-y: auto;
+}
+.modal-pie {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--ground);
+}
+.estimado {
+  margin-right: auto;
+}
+.estimado small {
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+}
+.estimado strong {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.f {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.f > span:first-child,
+legend {
+  font-size: 14px;
+  font-weight: 500;
+}
+.f > input,
+.pref {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--control);
+  border-radius: 8px;
+  background: var(--surface);
+  outline: 0;
+  transition: border-color 150ms ease;
+}
+.pref {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+}
+.pref input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.f > input:focus,
+.pref:focus-within {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+.f > input[aria-invalid='true'],
+.pref:has(input[aria-invalid='true']) {
+  border-color: var(--negative);
+}
+.err {
+  color: var(--negative);
+  font-size: 13px;
+  font-weight: 500;
+}
+.ayuda {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Salario, valor quincenal y valor por hora: tres campos con la misma altura y el mismo rótulo arriba. */
+.fila-salario {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+}
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.dato small {
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--text);
+}
+.dato strong {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: var(--salario-c);
+  font-size: 16px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+legend {
+  padding: 0;
+}
+/* Auxilio de transporte: días con auxilio, días que asistió y lo que resulta, alineados por el borde de abajo. */
+.aux .ayuda {
+  margin: 8px 0 12px;
+}
+.fila-aux {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 16px;
+}
+
+/* Un campo por tipo de hora: el rótulo arriba y el campo siempre alineado abajo de la fila. */
+.horas-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.horas-grid .f {
+  justify-content: flex-end;
+}
+
+/* ¿Aplica comisión?: título a la izquierda, selector a la derecha; el valor aparece debajo, a todo el ancho. */
+.comi {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--ground);
+}
+.comi-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.comi-titulo {
+  font-size: 14px;
+  font-weight: 500;
+}
+.comi .seg-ctrl button[aria-pressed='true'] {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: #fff;
+}
+.comi-valor {
+  width: 100%;
+}
+
+/* ---------- Tablet y celular ---------- */
+@media (max-width: 1100px) {
+  .ir-porcentajes {
+    display: inline-block;
+  }
+  .grilla {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .titulo {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .titulo .btn {
+    align-self: stretch;
+    height: 44px;
+  }
+  h1 {
+    font-size: 20px;
+    line-height: 28px;
+  }
+  .sub {
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  /* Una sola línea que se desliza de lado: la leyenda completa sin empujar la lista. */
+  .leyenda {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin-right: -16px;
+    padding-right: 16px;
+    scrollbar-width: none;
+  }
+  .leyenda::-webkit-scrollbar {
+    display: none;
+  }
+  .leyenda li {
+    flex: none;
+  }
+  .barra-lista {
+    gap: 8px 12px;
+  }
+  .buscar {
+    order: 5;
+    flex: 1 1 100%;
+  }
+  .buscar input {
+    width: 100%;
+  }
+
+  .tabla,
+  .tabla tbody,
+  .tabla tr {
+    display: block;
+  }
+  .tabla thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .tabla tbody tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    padding: 10px 0;
+  }
+  .tabla td {
+    height: auto;
+  }
+  .tabla td.calc {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    padding: 4px 0 0;
+  }
+
+  .como dl > div {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+  }
+  .fila-salario {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .fila-salario > .f {
+    grid-column: 1 / -1;
+  }
+  .horas-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .fila-aux {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .fila-aux .dato {
+    grid-column: 1 / -1;
+  }
+  .tabla .subtitulo {
+    display: block;
+    padding: 12px 0 4px;
+  }
+  input {
+    font-size: 16px;
+  }
+
+  /* Hoja inferior: sube desde el borde con la curva del cajón (Vaul) y sale más rápido. */
+  .modal {
+    width: 100vw;
+    max-width: 100vw;
+    max-height: 90dvh;
+    margin: auto 0 0;
+    border-radius: 12px 12px 0 0;
+    transform: translateY(100%);
+    transition-timing-function: var(--ease-drawer);
+  }
+  .modal[open] {
+    transform: none;
+
+    @starting-style {
+      transform: translateY(100%);
+    }
+  }
+  .modal::before {
+    content: '';
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 2px;
+    background: var(--control);
+  }
+  .modal form {
+    max-height: calc(90dvh - 12px);
+  }
+  .modal-pie {
+    flex-wrap: wrap;
+  }
+  .estimado {
+    flex-basis: 100%;
+  }
+  .modal-pie .btn {
+    flex: 1;
+    height: 44px;
+  }
+  .aviso {
+    width: calc(100vw - 32px);
+    justify-content: space-between;
+  }
+}

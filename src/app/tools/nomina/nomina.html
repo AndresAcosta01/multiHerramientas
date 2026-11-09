@@ -1,0 +1,401 @@
+<header class="titulo">
+  <div>
+    <h1>Nómina</h1>
+    <p class="sub">Liquidación quincenal: horas, recargos, extras, incapacidades y comisión.</p>
+  </div>
+  <button class="btn primario" type="button" (click)="abrir()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+    Agregar persona
+  </button>
+</header>
+
+<div class="grilla">
+  <section class="lista" aria-labelledby="t-personas">
+    <div class="barra-lista">
+      <h2 id="t-personas">Personas <span class="cuenta">{{ personas().length }}</span></h2>
+      <button class="texto ir-porcentajes" type="button" (click)="irAPorcentajes()">Porcentajes</button>
+      @if (personas().length) {
+        <label class="buscar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
+          <input type="search" placeholder="Buscar por nombre" aria-label="Buscar persona por nombre" autocomplete="off" [value]="filtro()" (input)="filtro.set($any($event.target).value)" />
+        </label>
+        <button class="texto" type="button" (click)="alternarTodo()">
+          {{ todasAbiertas() ? 'Contraer todo' : 'Expandir todo' }}
+        </button>
+      }
+    </div>
+
+    @if (leyenda().length) {
+      <ul class="leyenda" aria-label="Significado de cada color">
+        @for (c of leyenda(); track c.id) {
+          <li>
+            <button
+              class="chip"
+              type="button"
+              [attr.data-t]="c.id"
+              [attr.aria-pressed]="resaltado() === c.id"
+              [class.apagado]="resaltado() && resaltado() !== c.id"
+              (pointerenter)="resaltar(c.id, $event)"
+              (pointerleave)="resaltar(null, $event)"
+              (focus)="resaltar(c.id)"
+              (blur)="resaltar(null)"
+              (click)="fijar(c.id)"
+            >
+              {{ c.nombre }}
+            </button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (!personas().length) {
+      <div class="vacio">
+        <p>Todavía no hay nadie en la liquidación.</p>
+        <button class="btn" type="button" (click)="abrir()">Agregar la primera persona</button>
+      </div>
+      <section class="como" aria-labelledby="t-como">
+        <h3 id="t-como">Cómo se liquida cada persona</h3>
+        <dl>
+          <div>
+            <dt><span class="chip fijo" data-t="salario">Salario base</span></dt>
+            <dd>Horas ordinarias de la quincena × valor hora. El valor hora es el salario mensual ÷ 168 horas.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="recNocturno">Recargos</span></dt>
+            <dd>Se suma solo el recargo sobre el valor hora (nocturno {{ num(pcts()['recNocturno']) }} %, dominical diurno {{ num(pcts()['domDiurno']) }} %): la hora ya está dentro del salario.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="extDiurna">Horas extras</span></dt>
+            <dd>Se paga la hora completa más el recargo: una extra diurna se liquida al {{ num(100 + pcts()['extDiurna']) }} % del valor hora.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="incGeneral">Incapacidades</span></dt>
+            <dd>Se paga el porcentaje indicado y esas horas se descuentan de las ordinarias.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="comision">Comisión</span></dt>
+            <dd>Valor fijo de cada persona que se suma a su total.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="transporte">Auxilio de transporte</span></dt>
+            <dd>Solo para quien gana hasta 2 salarios mínimos: {{ cop(parametros().auxilio) }} al mes, pagado por los días que asistió.</dd>
+          </div>
+          <div>
+            <dt><span class="chip fijo" data-t="salud">Deducciones</span></dt>
+            <dd>Salud {{ num(parametros().salud) }} % y pensión {{ num(parametros().pension) }} % sobre lo salarial, con base mínima de 1 salario mínimo al mes. Desde 4 salarios mínimos se suma el fondo de solidaridad.</dd>
+          </div>
+        </dl>
+      </section>
+    } @else if (!liquidaciones().length) {
+      <div class="vacio">
+        <p>Nadie coincide con «{{ filtro() }}».</p>
+        <button class="btn" type="button" (click)="filtro.set('')">Borrar búsqueda</button>
+      </div>
+    }
+
+    @for (l of liquidaciones(); track l.persona.id) {
+      <article
+        class="persona"
+        [class.abierta]="abiertas().has(l.persona.id)"
+        [class.saliendo]="saliendo() === l.persona.id"
+      >
+        <div class="tarjeta">
+          <button
+            class="cab"
+            type="button"
+            [attr.aria-expanded]="abiertas().has(l.persona.id)"
+            [attr.aria-controls]="'det-' + l.persona.id"
+            (click)="alternar(l.persona.id)"
+          >
+            <span class="quien">
+              <strong>{{ l.persona.nombre }}</strong>
+              <small>Salario {{ cop(l.persona.salario) }} · valor hora {{ cop(l.valorHora) }} · {{ num(l.persona.horasOrd) }} h ordinarias</small>
+            </span>
+            <span class="total">
+              <small>Total a pagar</small>
+              <strong>{{ cop(l.total) }}</strong>
+              <small>Devengado {{ cop(l.devengado) }}</small>
+            </span>
+            <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+
+          <div class="barra" role="img" aria-label="Composición del pago de {{ l.persona.nombre }}">
+            @for (s of segs(l); track s.id) {
+              <i class="seg" [attr.data-t]="s.id" [style.flex-grow]="s.valor" [class.apagado]="resaltado() && resaltado() !== s.id"></i>
+            }
+          </div>
+
+          <div class="det" [id]="'det-' + l.persona.id">
+            <div class="det-in">
+              <table class="tabla">
+                <thead>
+                  <tr>
+                    <th scope="col">Concepto</th>
+                    <th scope="col">Cálculo</th>
+                    <th scope="col" class="num">Valor</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr [attr.data-t]="l.base.id" [class.foco]="resaltado() === l.base.id" [class.apagado]="resaltado() && resaltado() !== l.base.id" style="--i: 0">
+                    <td><span class="chip fijo" [attr.data-t]="l.base.id">{{ l.base.nombre }}</span></td>
+                    <td class="calc">{{ l.base.detalle }}</td>
+                    <td class="num">{{ cop(l.base.valor) }}</td>
+                  </tr>
+                  @for (x of l.lineas; track x.id; let i = $index) {
+                    <tr [attr.data-t]="x.id" [class.foco]="resaltado() === x.id" [class.apagado]="resaltado() && resaltado() !== x.id" [style.--i]="i + 1">
+                      <td><span class="chip fijo" [attr.data-t]="x.id">{{ x.nombre }}</span></td>
+                      <td class="calc">{{ x.detalle }}</td>
+                      <td class="num">{{ cop(x.valor) }}</td>
+                    </tr>
+                  }
+                  @if (l.comision) {
+                    <tr data-t="comision" [class.foco]="resaltado() === 'comision'" [class.apagado]="resaltado() && resaltado() !== 'comision'" [style.--i]="l.lineas.length + 1">
+                      <td><span class="chip fijo" data-t="comision">Comisión</span></td>
+                      <td class="calc">Valor fijo</td>
+                      <td class="num">{{ cop(l.comision) }}</td>
+                    </tr>
+                  }
+                  <tr data-t="transporte" [class.foco]="resaltado() === 'transporte'" [class.apagado]="resaltado() && resaltado() !== 'transporte'" [style.--i]="l.lineas.length + 2">
+                    <td><span class="chip fijo" data-t="transporte">Auxilio de transporte</span></td>
+                    <td class="calc">{{ l.auxilio.detalle }}</td>
+                    <td class="num">{{ cop(l.auxilio.valor) }}</td>
+                  </tr>
+                  @if (l.bono) {
+                    <tr data-t="bono" [class.foco]="resaltado() === 'bono'" [class.apagado]="resaltado() && resaltado() !== 'bono'" [style.--i]="l.lineas.length + 3">
+                      <td><span class="chip fijo" data-t="bono">Bono extralegal</span></td>
+                      <td class="calc">Valor ingresado · no salarial</td>
+                      <td class="num">{{ cop(l.bono) }}</td>
+                    </tr>
+                  }
+                  <tr class="subtitulo">
+                    <th scope="rowgroup" colspan="3">Deducciones del trabajador</th>
+                  </tr>
+                  @for (d of l.deducciones; track d.id; let i = $index) {
+                    <tr [attr.data-t]="d.id" [class.foco]="resaltado() === d.id" [class.apagado]="resaltado() && resaltado() !== d.id" [style.--i]="l.lineas.length + 4 + i">
+                      <td><span class="chip fijo" [attr.data-t]="d.id">{{ d.nombre }}</span></td>
+                      <td class="calc">{{ d.detalle }}</td>
+                      <td class="num">{{ cop(-d.valor) }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+              <div class="pie-persona">
+                <button class="texto peligro" type="button" (click)="quitar(l.persona.id)">Quitar a {{ l.persona.nombre }}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    }
+  </section>
+
+  <aside #rail class="rail" aria-labelledby="t-param">
+    <section class="param-panel">
+      <h2 id="t-param">Porcentajes</h2>
+      <p class="desc">Editables. Cambian el cálculo de todas las personas.</p>
+
+      @for (t of tipos; track t.id) {
+        <label class="param">
+          <span class="pt">{{ t.nombre }}</span>
+          <span class="campo">
+            <input type="number" min="0" step="0.01" [attr.aria-label]="'Porcentaje de ' + t.nombre" [value]="pcts()[t.id]" (input)="setPct(t.id, $event)" />
+            <span>%</span>
+          </span>
+        </label>
+      }
+      <label class="param">
+        <span class="pt">Salud (trabajador)</span>
+        <span class="campo">
+          <input type="number" min="0" step="0.01" aria-label="Porcentaje de salud del trabajador" [value]="parametros().salud" (input)="setParametro('salud', $event)" />
+          <span>%</span>
+        </span>
+      </label>
+      <label class="param">
+        <span class="pt">Pensión (trabajador)</span>
+        <span class="campo">
+          <input type="number" min="0" step="0.01" aria-label="Porcentaje de pensión del trabajador" [value]="parametros().pension" (input)="setParametro('pension', $event)" />
+          <span>%</span>
+        </span>
+      </label>
+
+      <h2 class="valores">Valores vigentes</h2>
+      <p class="desc">Cambian cada año. Definen el auxilio y el tope de 2 salarios mínimos.</p>
+      <label class="param">
+        <span class="pt">Salario mínimo</span>
+        <span class="campo ancho">
+          <span>$</span>
+          <input type="text" inputmode="numeric" aria-label="Salario mínimo mensual" [value]="parametros().smmlv.toLocaleString('es-CO')" (input)="setParametro('smmlv', $event, true)" />
+        </span>
+      </label>
+      <label class="param">
+        <span class="pt">Auxilio de transporte (mensual)</span>
+        <span class="campo ancho">
+          <span>$</span>
+          <input type="text" inputmode="numeric" aria-label="Auxilio de transporte mensual" [value]="parametros().auxilio.toLocaleString('es-CO')" (input)="setParametro('auxilio', $event, true)" />
+        </span>
+      </label>
+    </section>
+  </aside>
+</div>
+
+@if (deshacer(); as d) {
+  <div class="aviso" role="status">
+    <span>Se quitó a {{ d.persona.nombre }}.</span>
+    <button type="button" (click)="restaurar()">Deshacer</button>
+  </div>
+}
+
+<dialog #dlg class="modal" aria-labelledby="t-modal" (click)="alFondo($event)">
+  <form (submit)="guardar($event)" novalidate>
+    <header class="modal-cab">
+      <h2 id="t-modal">Agregar persona</h2>
+      <button class="icono" type="button" aria-label="Cerrar" (click)="cerrar()">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+
+    <div class="modal-cuerpo">
+      <label class="f">
+        <span>Nombre</span>
+        <input
+          #campoNombre
+          type="text"
+          autocomplete="off"
+          placeholder="Ej. Laura Gómez"
+          [value]="nombre()"
+          [attr.aria-invalid]="intento() && !nombre().trim()"
+          (input)="nombre.set($any($event.target).value)"
+        />
+        @if (intento() && !nombre().trim()) {
+          <small class="err" role="alert">Escribe el nombre de la persona.</small>
+        }
+      </label>
+
+      <div class="fila-salario">
+        <label class="f">
+          <span>Salario mensual</span>
+          <span class="pref">
+            <span aria-hidden="true">$</span>
+            <input
+              type="text"
+              inputmode="numeric"
+              placeholder="0"
+              [value]="salario() ? salario().toLocaleString('es-CO') : ''"
+              [attr.aria-invalid]="intento() && salario() <= 0"
+              (input)="salario.set(moneda($event))"
+            />
+          </span>
+          @if (intento() && salario() <= 0) {
+            <small class="err" role="alert">Ingresa el salario mensual.</small>
+          }
+        </label>
+        <div class="dato" aria-live="polite">
+          <small>Valor quincenal</small>
+          <strong>{{ cop(valorQuincenal()) }}</strong>
+        </div>
+        <div class="dato" aria-live="polite">
+          <small>Valor por hora</small>
+          <strong>{{ cop(vistaPrevia().valorHora) }}</strong>
+        </div>
+      </div>
+
+      <label class="f f-horas">
+        <span>Horas ordinarias de la quincena</span>
+        <input type="number" min="0" step="0.5" [value]="horasOrd()" (input)="horasOrd.set(decimal($event))" />
+        <small class="ayuda">Son 84 por la jornada de 42 horas semanales; cámbialas si trabajó menos.</small>
+      </label>
+
+      <fieldset class="horas">
+        <legend>Horas por tipo en la quincena</legend>
+        <div class="horas-grid">
+          @for (t of tipos; track t.id) {
+            <label class="f">
+              <span>{{ t.nombre }}</span>
+              <input type="number" min="0" step="0.5" placeholder="0" [value]="horas()[t.id] || ''" (input)="setHoras(t.id, $event)" />
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <div class="comi" role="group" aria-labelledby="t-comi">
+        <div class="comi-fila">
+          <span id="t-comi" class="comi-titulo">¿Aplica comisión?</span>
+          <div class="seg-ctrl" role="radiogroup" aria-labelledby="t-comi">
+            <button type="button" role="radio" [attr.aria-checked]="!aplicaComision()" [attr.aria-pressed]="!aplicaComision()" (click)="aplicaComision.set(false)">No</button>
+            <button type="button" role="radio" [attr.aria-checked]="aplicaComision()" [attr.aria-pressed]="aplicaComision()" (click)="aplicaComision.set(true)">Sí</button>
+          </div>
+        </div>
+        @if (aplicaComision()) {
+          <label class="f comi-valor">
+            <span>Valor de la comisión</span>
+            <span class="pref">
+              <span aria-hidden="true">$</span>
+              <input
+                type="text"
+                inputmode="numeric"
+                placeholder="0"
+                [value]="comision() ? comision().toLocaleString('es-CO') : ''"
+                (input)="comision.set(moneda($event))"
+              />
+            </span>
+          </label>
+        }
+      </div>
+
+      <div class="comi" role="group" aria-labelledby="t-bono">
+        <div class="comi-fila">
+          <span id="t-bono" class="comi-titulo">¿Aplica bono extralegal?</span>
+          <div class="seg-ctrl" role="radiogroup" aria-labelledby="t-bono">
+            <button type="button" role="radio" [attr.aria-checked]="!aplicaBono()" [attr.aria-pressed]="!aplicaBono()" (click)="aplicaBono.set(false)">No</button>
+            <button type="button" role="radio" [attr.aria-checked]="aplicaBono()" [attr.aria-pressed]="aplicaBono()" (click)="aplicaBono.set(true)">Sí</button>
+          </div>
+        </div>
+        @if (aplicaBono()) {
+          <label class="f comi-valor">
+            <span>Valor del bono extralegal</span>
+            <span class="pref">
+              <span aria-hidden="true">$</span>
+              <input
+                type="text"
+                inputmode="numeric"
+                placeholder="0"
+                [value]="bono() ? bono().toLocaleString('es-CO') : ''"
+                (input)="bono.set(moneda($event))"
+              />
+            </span>
+          </label>
+        }
+      </div>
+
+      @if (muestraAuxilio()) {
+        <fieldset class="aux">
+          <legend>Auxilio de transporte</legend>
+          <p class="ayuda">Aplica a quien gana hasta 2 salarios mínimos. Se paga por días: {{ cop(parametros().auxilio / 2) }} por quincena completa.</p>
+          <div class="fila-aux">
+            <label class="f">
+              <span>Días con auxilio de la quincena</span>
+              <input type="number" min="0" step="1" [value]="diasAuxilio()" (input)="diasAuxilio.set(decimal($event))" />
+            </label>
+            <label class="f">
+              <span>Días que asistió</span>
+              <input type="number" min="0" step="1" [value]="diasAsistio()" (input)="diasAsistio.set(decimal($event))" />
+            </label>
+            <div class="dato" aria-live="polite">
+              <small>Auxilio a pagar</small>
+              <strong>{{ cop(vistaPrevia().auxilio?.valor ?? 0) }}</strong>
+            </div>
+          </div>
+        </fieldset>
+      }
+    </div>
+
+    <footer class="modal-pie">
+      <div class="estimado" aria-live="polite">
+        <small>Total estimado (neto, después de salud y pensión)</small>
+        <strong>{{ cop(vistaPrevia().total) }}</strong>
+      </div>
+      <button class="btn" type="button" (click)="cerrar()">Cancelar</button>
+      <button class="btn primario" type="submit">Agregar persona</button>
+    </footer>
+  </form>
+</dialog>
