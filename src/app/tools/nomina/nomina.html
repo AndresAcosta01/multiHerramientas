@@ -13,7 +13,6 @@
   <section class="lista" aria-labelledby="t-personas">
     <div class="barra-lista">
       <h2 id="t-personas">Personas <span class="cuenta">{{ personas().length }}</span></h2>
-      <button class="texto ir-porcentajes" type="button" (click)="irAPorcentajes()">Porcentajes</button>
       @if (personas().length) {
         <label class="buscar">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4 4" /></svg>
@@ -189,9 +188,16 @@
     }
   </section>
 
-  <aside #rail class="rail" aria-labelledby="t-param">
+  <aside class="rail" [class.abierto]="paramAbierto()" aria-labelledby="t-param">
     <section class="param-panel">
-      <h2 id="t-param">Porcentajes</h2>
+      <button class="param-cab" type="button" [attr.aria-expanded]="paramAbierto()" aria-controls="param-cuerpo" (click)="paramAbierto.set(!paramAbierto())">
+        <span class="param-txt">
+          <strong id="t-param">Porcentajes</strong>
+          <small>{{ resumen() }}</small>
+        </span>
+        <svg class="param-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+      </button>
+      <div id="param-cuerpo" class="param-cuerpo">
       <p class="desc">Editables. Cambian el cálculo de todas las personas.</p>
 
       @for (t of tipos; track t.id) {
@@ -234,6 +240,7 @@
           <input type="text" inputmode="numeric" aria-label="Auxilio de transporte mensual" [value]="parametros().auxilio.toLocaleString('es-CO')" (input)="setParametro('auxilio', $event, true)" />
         </span>
       </label>
+      </div>
     </section>
   </aside>
 </div>
