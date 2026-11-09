@@ -1,0 +1,400 @@
+<header class="titulo">
+  <div>
+    <h1>Descansos y almuerzos</h1>
+    <p class="sub">Cobertura por intervalo de 30 minutos. Escribe cuántos agentes deben estar conectados.</p>
+  </div>
+  <button class="btn primario" type="button" (click)="asignar()">Asignar descansos</button>
+</header>
+
+<div class="grilla">
+  <section class="lista" aria-labelledby="t-lista">
+    <h2 id="t-lista" class="solo-lectura">Cobertura del día</h2>
+
+    <div class="barra">
+      <div class="dias" role="group" aria-label="Día de la semana">
+        @for (d of DIAS; track d) {
+          <button type="button" [attr.aria-pressed]="dia() === d" (click)="setDia(d)">{{ d }}</button>
+        }
+      </div>
+      <button class="btn" type="button" (click)="copiarADias()">Copiar a otros días</button>
+    </div>
+
+    <div class="hallazgo" aria-live="polite">
+      @if (conteo().deficit) {
+        <span class="estado" data-e="Déficit">{{ conteo().deficit }} {{ conteo().deficit === 1 ? 'intervalo en déficit' : 'intervalos en déficit' }}</span>
+      }
+      @if (conteo().revisar) {
+        <span class="estado" data-e="Revisar">{{ conteo().revisar }} por revisar</span>
+      }
+      @if (conteo().cumple) {
+        <span class="estado" data-e="Cumple">{{ conteo().cumple }} {{ conteo().cumple === 1 ? 'cumple' : 'cumplen' }}</span>
+      }
+      @if (!conteo().deficit && !conteo().revisar && !conteo().cumple) {
+        <span class="nota">Escribe los agentes requeridos de cada intervalo para ver la cobertura.</span>
+      }
+    </div>
+
+    <div class="tarjeta">
+      <div class="pestanas">
+        <div class="tabs" role="tablist">
+          <button type="button" role="tab" [attr.aria-selected]="pestana() === 'cobertura'" (click)="pestana.set('cobertura')">Cobertura por intervalo</button>
+          <button type="button" role="tab" [attr.aria-selected]="pestana() === 'agentes'" (click)="pestana.set('agentes')">Por agente</button>
+        </div>
+        <div class="exportar">
+          <button class="btn" type="button" (click)="copiar()">Copiar</button>
+          <button class="btn" type="button" (click)="descargar()">Descargar Excel</button>
+        </div>
+      </div>
+
+      @if (pestana() === 'cobertura') {
+        <table class="tabla">
+          <thead>
+            <tr>
+              <th scope="col">Hora</th>
+              <th scope="col" class="num">Requeridos</th>
+              <th scope="col" class="num">Conectados</th>
+              <th scope="col" class="num">En descanso</th>
+              <th scope="col" class="num">En almuerzo</th>
+              <th scope="col" class="num">Disponibles</th>
+              <th scope="col" class="num">Puede salir</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (f of filas(); track f.inicio) {
+              <tr [attr.data-e]="f.estado">
+                <td class="c-hora"><i class="franja"></i>{{ hora(f.inicio) }}</td>
+                <td class="c-req" data-l="Requeridos">
+                  <input type="number" min="0" inputmode="numeric" placeholder="0" [attr.aria-label]="'Agentes requeridos a las ' + hora(f.inicio)" [value]="f.req || ''" (input)="setReq(f.inicio, $event)" />
+                </td>
+                <td class="num c-con" data-l="Conectados">{{ f.conectados }}</td>
+                <td class="num c-desc">{{ f.descanso }}</td>
+                <td class="num c-alm">{{ f.almuerzo }}</td>
+                <td class="num c-disp" data-l="Disponibles">{{ f.disponibles }}</td>
+                <td class="num c-sale" data-l="Puede salir">
+                  @if (!f.estado) {
+                    —
+                  } @else if (f.puedeSalir > 0) {
+                    {{ f.puedeSalir }}
+                  } @else {
+                    <span class="sin"><span class="largo">Sin capacidad</span><span class="corto">Ninguno</span></span>
+                  }
+                </td>
+                <td class="c-estado">
+                  @if (f.estado) {
+                    <span class="estado" [attr.data-e]="f.estado">{{ f.estado }}</span>
+                  }
+                </td>
+                <td class="c-fuera">En descanso {{ f.descanso }} · En almuerzo {{ f.almuerzo }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="agentes-barra">
+          <ul class="marcas-leyenda" aria-label="Significado de las marcas">
+            <li><i class="m-turno"></i>Turno</li>
+            <li><i class="m-descanso"></i>Descanso</li>
+            <li><i class="m-almuerzo"></i>Almuerzo</li>
+            <li class="aclara">Franja "Fuera": agentes que salen en cada intervalo, en azul por descanso y en naranja por almuerzo.</li>
+          </ul>
+          <div class="acciones">
+            <button class="btn" type="button" (click)="abrirLista()">Pegar lista</button>
+            <button class="btn" type="button" (click)="abrirAgente()">Agregar agente</button>
+          </div>
+        </div>
+
+        @if (sel(); as v) {
+          <div class="seleccion" role="status">
+            <strong>{{ v.a.codigo }} · {{ v.s.tipo === 'descanso' ? 'Descanso' : 'Almuerzo' }} {{ hora(v.s.inicio) }} – {{ hora(v.s.fin) }}</strong>
+            <span class="acciones">
+              <button class="btn" type="button" [disabled]="!v.antes" (click)="mover(-30)">Mover a {{ hora(v.s.inicio - 30) }}</button>
+              <button class="btn" type="button" [disabled]="!v.despues" (click)="mover(30)">Mover a {{ hora(v.s.inicio + 30) }}</button>
+              <button class="btn" type="button" (click)="quitarSalida()">Quitar</button>
+            </span>
+          </div>
+        }
+
+        @if (!agentes().length) {
+          <div class="vacio">
+            <p>Todavía no hay agentes para este día. No se guardan datos: todo se borra al recargar.</p>
+            <div class="acciones">
+              <button class="btn" type="button" (click)="abrirAgente()">Agregar agente</button>
+              <button class="btn" type="button" (click)="abrirLista()">Pegar lista</button>
+            </div>
+          </div>
+        } @else {
+          <div class="agente eje-fila">
+            <span class="a-etq"></span>
+            <div class="eje" aria-hidden="true">
+              @for (t of eje(); track t.h) {
+                <span [style.left.%]="t.left">{{ t.h }}</span>
+              }
+            </div>
+          </div>
+          <div class="agente fuera-fila">
+            <span class="a-etq"><small>Fuera</small></span>
+            <div class="fuera">
+              @for (f of filas(); track f.inicio) {
+                <span
+                  class="cel"
+                  [style.left.%]="pos(f.inicio)"
+                  [style.width.%]="ancho(f.inicio, f.inicio + 30)"
+                  [attr.title]="hora(f.inicio) + ': ' + f.descanso + ' en descanso, ' + f.almuerzo + ' en almuerzo'"
+                >
+                  @if (f.descanso) {
+                    <b class="d">{{ f.descanso }}</b>
+                  }
+                  @if (f.almuerzo) {
+                    <b class="a">{{ f.almuerzo }}</b>
+                  }
+                </span>
+              }
+            </div>
+          </div>
+
+          @for (x of agentes(); track x.a.id) {
+            <div class="agente">
+              <div class="a-etq">
+                <strong>{{ x.a.codigo }}</strong>
+                <small>{{ x.turno }}</small>
+                @if (x.a.almuerzoFijo != null) {
+                  <small>Almuerzo fijo {{ hora(x.a.almuerzoFijo) }}</small>
+                }
+              </div>
+              <div class="a-linea">
+                <i class="turno" [style.left.%]="pos(x.a.entrada)" [style.width.%]="ancho(x.a.entrada, x.a.salida)"></i>
+                @for (s of x.salidas; track s.id) {
+                  <button
+                    type="button"
+                    class="marca"
+                    [attr.data-tipo]="s.tipo"
+                    [class.sel]="seleccion() === s.id"
+                    [style.left.%]="pos(s.inicio)"
+                    [style.width.%]="ancho(s.inicio, s.fin)"
+                    [attr.aria-pressed]="seleccion() === s.id"
+                    [attr.aria-label]="(s.tipo === 'descanso' ? 'Descanso ' : 'Almuerzo ') + hora(s.inicio) + ' a ' + hora(s.fin) + ' de ' + x.a.codigo"
+                    (click)="seleccionar(s.id)"
+                  ></button>
+                }
+              </div>
+              <div class="a-pie">
+                <p class="a-resumen">{{ x.resumen }}</p>
+                <div class="a-acc">
+                  <button type="button" class="texto" [attr.aria-label]="'Agregar un descanso a ' + x.a.codigo" (click)="agregarSalida(x.a.id, 'descanso')">+ Descanso</button>
+                  <button type="button" class="texto" [attr.aria-label]="'Agregar un almuerzo a ' + x.a.codigo" (click)="agregarSalida(x.a.id, 'almuerzo')">+ Almuerzo</button>
+                  <button type="button" class="texto peligro" [attr.aria-label]="'Quitar a ' + x.a.codigo" (click)="quitarAgente(x.a.id)">Quitar</button>
+                </div>
+              </div>
+              <div class="a-chips">
+                @for (s of x.salidas; track s.id) {
+                  <button type="button" class="ficha" [attr.data-tipo]="s.tipo" [class.sel]="seleccion() === s.id" [attr.aria-pressed]="seleccion() === s.id" (click)="seleccionar(s.id)">
+                    {{ s.tipo === 'descanso' ? 'Descanso' : 'Almuerzo' }} {{ hora(s.inicio) }}
+                  </button>
+                }
+              </div>
+
+              @if (sel(); as v) {
+                @if (v.a.id === x.a.id) {
+                  <div class="seleccion-fila">
+                    <button class="btn" type="button" [disabled]="!v.antes" (click)="mover(-30)">Mover a {{ hora(v.s.inicio - 30) }}</button>
+                    <button class="btn" type="button" [disabled]="!v.despues" (click)="mover(30)">Mover a {{ hora(v.s.inicio + 30) }}</button>
+                    <button class="btn" type="button" (click)="quitarSalida()">Quitar</button>
+                  </div>
+                }
+              }
+
+              @for (pd of x.pendientes; track $index) {
+                <div class="pendiente">
+                  <span class="estado" data-e="Revisar">{{ pd.tipo === 'descanso' ? 'Descanso' : 'Almuerzo' }} sin asignar</span>
+                  <span class="nota">{{ pd.motivo }}</span>
+                  <button class="texto" type="button" (click)="asignarPendiente(pd)">Asignar de todos modos</button>
+                </div>
+              }
+            </div>
+          }
+        }
+      }
+    </div>
+  </section>
+
+  <aside class="parametros" [class.abierto]="paramAbierto()" aria-labelledby="t-param">
+    <button class="param-cab" type="button" [attr.aria-expanded]="paramAbierto()" aria-controls="param-cuerpo" (click)="paramAbierto.set(!paramAbierto())">
+      <span class="param-txt">
+        <strong id="t-param">Parámetros</strong>
+        <small>{{ resumen() }}</small>
+      </span>
+      <svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+    </button>
+    <div id="param-cuerpo" class="param-cuerpo">
+      <p class="desc">Ajústalos a tu operación. Los valores iniciales son de ejemplo, no una norma.</p>
+
+      <label class="param">
+        <span class="pt">El descanso empieza a los</span>
+        <span class="campo"><input type="number" min="0" [value]="p().desfase" (input)="setNum('desfase', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Duración del descanso</span>
+        <span class="campo"><input type="number" min="1" [value]="p().descanso" (input)="setNum('descanso', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Descansos por agente</span>
+        <span class="campo"><input type="number" min="0" [value]="p().descansos" (input)="setNum('descansos', $event)" /></span>
+      </label>
+      <label class="param">
+        <span class="pt">Duración del almuerzo</span>
+        <span class="campo"><input type="number" min="1" [value]="p().almuerzo" (input)="setNum('almuerzo', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Almuerzo desde</span>
+        <span class="campo"><input type="time" [value]="hhmm(p().almuerzoDesde)" (input)="setHora('almuerzoDesde', $event)" /></span>
+      </label>
+      <label class="param">
+        <span class="pt">Almuerzo hasta</span>
+        <span class="campo"><input type="time" [value]="hhmm(p().almuerzoHasta)" (input)="setHora('almuerzoHasta', $event)" /></span>
+      </label>
+      <label class="param">
+        <span class="pt">Operación desde</span>
+        <span class="campo"><input type="time" [value]="hhmm(p().desde)" (input)="setHora('desde', $event)" /></span>
+      </label>
+      <label class="param">
+        <span class="pt">Operación hasta</span>
+        <span class="campo"><input type="time" [value]="hhmm(p().hasta)" (input)="setHora('hasta', $event)" /></span>
+      </label>
+      <label class="param">
+        <span class="pt">Separación entre salidas</span>
+        <span class="campo"><input type="number" min="0" [value]="p().separacion" (input)="setNum('separacion', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Margen del descanso (entrada y salida)</span>
+        <span class="campo"><input type="number" min="0" [value]="p().margenDescanso" (input)="setNum('margenDescanso', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Margen del almuerzo (entrada y salida)</span>
+        <span class="campo"><input type="number" min="0" [value]="p().margenAlmuerzo" (input)="setNum('margenAlmuerzo', $event)" /><span>min</span></span>
+      </label>
+      <label class="param">
+        <span class="pt">Cuenta como fuera desde</span>
+        <span class="campo"><input type="number" min="1" [value]="p().minFuera" (input)="setNum('minFuera', $event)" /><span>min</span></span>
+      </label>
+
+      <div class="reglas">
+        <h3>Cómo se calcula el estado</h3>
+        <p><span class="estado" data-e="Cumple">Cumple</span>Disponibles igual o mayores que los requeridos.</p>
+        <p><span class="estado" data-e="Revisar">Revisar</span>Hay conectados suficientes, pero los descansos dejan menos disponibles que los requeridos.</p>
+        <p><span class="estado" data-e="Déficit">Déficit</span>Hay menos conectados que requeridos, aun sin descansos.</p>
+        <p class="nota">Una salida cuenta en un intervalo si lo ocupa {{ p().minFuera }} minutos o más.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+
+@if (aviso(); as a) {
+  <div class="aviso" role="status">
+    <span>{{ a.texto }}</span>
+    @if (a.deshacer) {
+      <button type="button" (click)="deshacerAviso()">Deshacer</button>
+    }
+  </div>
+}
+
+<dialog #dlgAgente class="modal" aria-labelledby="t-agente" (click)="alFondo($event, dlgAgente)">
+  <form (submit)="guardarAgente($event)" novalidate>
+    <header class="modal-cab">
+      <h2 id="t-agente">Agregar agente</h2>
+      <button class="icono" type="button" aria-label="Cerrar" (click)="cerrar(dlgAgente)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+
+    <div class="modal-cuerpo">
+      <label class="f">
+        <span>Código o nombre (opcional)</span>
+        <input type="text" autocomplete="off" placeholder="Ej. A-11" [value]="agCodigo()" (input)="agCodigo.set($any($event.target).value)" />
+        <small class="ayuda">No se guarda. Puedes usar un código en lugar del nombre.</small>
+      </label>
+
+      <div class="fila-2">
+        <label class="f">
+          <span>Entrada</span>
+          <input type="time" [value]="hhmm(agEntrada())" (input)="agEntrada.set(minutos($event))" />
+        </label>
+        <label class="f">
+          <span>Salida</span>
+          <input type="time" [value]="hhmm(agSalida())" (input)="agSalida.set(minutos($event))" />
+        </label>
+      </div>
+
+      <div class="si-no" role="group" aria-labelledby="t-fijo">
+        <div class="si-no-fila">
+          <span class="si-no-txt">
+            <strong id="t-fijo">¿Almuerzo a una hora fija?</strong>
+            <small>La asignación respeta esta hora.</small>
+          </span>
+          <div class="seg-ctrl" role="radiogroup" aria-labelledby="t-fijo">
+            <button type="button" role="radio" [attr.aria-checked]="!agFijo()" [attr.aria-pressed]="!agFijo()" (click)="agFijo.set(false)">No</button>
+            <button type="button" role="radio" [attr.aria-checked]="agFijo()" [attr.aria-pressed]="agFijo()" (click)="agFijo.set(true)">Sí</button>
+          </div>
+        </div>
+        @if (agFijo()) {
+          <label class="f">
+            <span>Hora del almuerzo</span>
+            <input type="time" [value]="hhmm(agFijoHora())" (input)="agFijoHora.set(minutos($event))" />
+          </label>
+        }
+      </div>
+
+      @if (intento() && errorAgente()) {
+        <p class="err" role="alert">{{ errorAgente() }}</p>
+      }
+
+      <div class="resumen">
+        <small>Con los parámetros actuales</small>
+        <p>{{ resumenAgente() }}</p>
+      </div>
+    </div>
+
+    <footer class="modal-pie">
+      <button class="btn" type="button" (click)="cerrar(dlgAgente)">Cancelar</button>
+      <button class="btn primario" type="submit">Agregar agente</button>
+    </footer>
+  </form>
+</dialog>
+
+<dialog #dlgLista class="modal" aria-labelledby="t-lista-modal" (click)="alFondo($event, dlgLista)">
+  <form (submit)="guardarLista($event)" novalidate>
+    <header class="modal-cab">
+      <h2 id="t-lista-modal">Pegar lista</h2>
+      <button class="icono" type="button" aria-label="Cerrar" (click)="cerrar(dlgLista)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+    </header>
+
+    <div class="modal-cuerpo">
+      <label class="f">
+        <span>Lista de agentes</span>
+        <textarea rows="6" placeholder="A-11, 6:00, 15:00&#10;A-12, 7:00, 16:00, almuerzo 12:30" [value]="texto()" (input)="texto.set($any($event.target).value)"></textarea>
+        <small class="ayuda">Una línea por agente: código, entrada, salida y, si tiene, "almuerzo" con su hora. Puedes pegar desde Excel.</small>
+      </label>
+
+      <div class="resultado" aria-live="polite">
+        @if (lectura().agentes.length) {
+          <span class="estado" data-e="Cumple">{{ lectura().agentes.length }} {{ lectura().agentes.length === 1 ? 'agente listo' : 'agentes listos' }}</span>
+        }
+        @if (lectura().errores.length) {
+          <span class="estado" data-e="Déficit">{{ lectura().errores.length }} {{ lectura().errores.length === 1 ? 'línea con error' : 'líneas con error' }}</span>
+        }
+      </div>
+      @for (e of lectura().errores; track $index) {
+        <p class="err">{{ e }}</p>
+      }
+    </div>
+
+    <footer class="modal-pie">
+      <button class="btn" type="button" (click)="cerrar(dlgLista)">Cancelar</button>
+      <button class="btn primario" type="submit" [disabled]="!lectura().agentes.length">
+        {{ lectura().agentes.length > 1 ? 'Agregar ' + lectura().agentes.length + ' agentes' : 'Agregar agente' }}
+      </button>
+    </footer>
+  </form>
+</dialog>
